@@ -130,7 +130,7 @@ st.set_page_config(page_title="HydroChaotic 💧", layout="centered", initial_si
 st.markdown("""
 <div style="display:flex; align-items:center; gap:12px;">
   <div style="font-size:28px;">💧</div>
-  <div style="font-size:30px; font-weight:600;">WaterYouDoing"</div>
+  <div style="font-size:30px; font-weight:600;">WaterYouDoing</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -231,7 +231,7 @@ with col2:
     st.markdown("---")
     dates, totals = get_history_aggregated(data,HISTORY_DAYS)
     chart_df = pd.DataFrame({"date":[d.isoformat() for d in dates],"total":totals})
-    st.write("Last 7 days")
+    st.write("Last week of cat's water rehab:")
     st.bar_chart(chart_df.set_index("date")["total"])
 
     st.markdown("---")
@@ -255,3 +255,4 @@ with col2:
 st.markdown("---")
 if st.checkbox("Show raw data (CSV)"):
     st.dataframe(load_data(), use_container_width=True)
+
