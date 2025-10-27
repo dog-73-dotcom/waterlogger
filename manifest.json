@@ -1,6 +1,6 @@
 {
-  "name": "Hydrochaotic",
-  "short_name": "Hydrochaotic",
+  "name": "WaterYouDoing",
+  "short_name": "WYD",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -13,3 +13,4 @@
     }
   ]
 }
+
