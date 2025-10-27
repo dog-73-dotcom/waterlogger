@@ -4,6 +4,10 @@ from datetime import datetime, date, timedelta
 import os
 import random
 st.set_page_config(
+    st.markdown("""
+<link rel="manifest" href="manifest.json">
+""", unsafe_allow_html=True)
+
     page_title="WaterYouDoing",
     page_icon="icon.png",
     layout="centered",
@@ -261,6 +265,7 @@ with col2:
 st.markdown("---")
 if st.checkbox("Show raw data (CSV)"):
     st.dataframe(load_data(), use_container_width=True)
+
 
 
 
