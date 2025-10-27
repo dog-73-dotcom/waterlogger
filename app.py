@@ -1,41 +1,16 @@
 import streamlit as st
-
-# ---------- STREAMLIT PAGE CONFIG ----------
-st.set_page_config(
-    page_title="Hydrochaotic",
-    page_icon="icon.png",
-    layout="centered",
-    initial_sidebar_state="auto"
-)
-
-st.cache_data.clear()
-
-st.markdown(
-    """
-    <link rel="apple-touch-icon" sizes="180x180" href="icon-512.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="icon-512.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="icon-512.png">
-    """,
-    unsafe_allow_html=True
-)
-import streamlit as st
-
-# ---------- STREAMLIT PAGE CONFIG ----------
-st.set_page_config(
-    page_title="Hydrochaotic",   # Your app name
-    page_icon="icon.png",         # Your custom icon (must be in same folder as app.py)
-    layout="centered",            # Options: "centered" or "wide"
-    initial_sidebar_state="auto"  # Options: "auto", "expanded", "collapsed"
-)
-
-# ---------- OPTIONAL: CACHE CLEAR (helps with old favicon issues) ----------
-st.cache_data.clear()
-import streamlit as st
 import pandas as pd
 from datetime import datetime, date, timedelta
 import os
 import random
+
+# ---------- STREAMLIT PAGE CONFIG ----------
+st.set_page_config(
+    page_title="Hydrochaotic",   # Your app name
+    page_icon="icon.png",         # Browser tab icon
+    layout="centered",            # Options: "centered" or "wide"
+    initial_sidebar_state="auto"  # Options: "auto", "expanded", "collapsed"
+)
 
 # ---------- CONFIG ----------
 CSV_FILE = "data.csv"
@@ -137,159 +112,3 @@ def get_history_aggregated(df, days=HISTORY_DAYS):
 # ---------- SESSION STATE ----------
 if "refresh" not in st.session_state:
     st.session_state.refresh = 0
-
-# ---------- CSS FOR BUTTONS ----------
-st.markdown("""
-<style>
-div.stButton > button {
-    min-width: 90px;
-    padding: 8px 0px;
-    font-size: 16px;
-    margin: 2px 0px;
-}
-.custom-box {
-    background-color: #f5faff;
-    color: black;
-    padding: 10px;
-    border-radius: 8px;
-    margin-top: 8px;
-}
-</style>
-""", unsafe_allow_html=True)
-
-# ---------- UI ----------
-st.set_page_config(page_title="HydroChaotic 💧", layout="centered", initial_sidebar_state="expanded")
-
-st.markdown("""
-<div style="display:flex; align-items:center; gap:12px;">
-  <div style="font-size:28px;">💧</div>
-  <div style="font-size:32px; font-weight:600;">WaterYouDoing</div>
-</div>
-""", unsafe_allow_html=True)
-
-init_csv()
-data = load_data()
-
-# Sidebar
-with st.sidebar:
-    st.header("Random stuff you dont need to worry about.")
-    st.write("Daily goal:", f"**{DAILY_GOAL} ml**")
-    reminder_toggle = st.checkbox("Enable in-app reminders while app is open", value=False)
-    reminder_interval = st.number_input("Reminder interval (minutes)", min_value=1, max_value=1440, value=60)
-    st.markdown("---")
-    st.write("Theme:")
-    theme_choice = st.radio("", ["Funny & chaotic", "Minimal & calm"], index=0)
-
-# Columns layout rebalanced
-col1, col2 = st.columns([1.5,1])
-
-with col1:
-    st.subheader("The water won't drink itself.")
-
-    # ---------- QUICK BUTTONS ----------
-    quick_amounts = [250, 500]
-    quick_cols = st.columns(len(quick_amounts))
-    for idx, amt in enumerate(quick_amounts):
-        with quick_cols[idx]:
-            if st.button(f"+{amt} ml", key=f"quick_{amt}"):
-                now = add_entry(amt)
-                st.success(f"Added {amt} ml at {now.strftime('%I:%M %p')}")
-
-                # Meme image + caption
-                meme = random.choice(MEMES)
-                st.image(meme['url'], use_container_width=True)
-                st.markdown(f"<div style='text-align:center; font-size:14px; margin-top:4px;'>{meme['caption']}</div>", unsafe_allow_html=True)
-
-
-                st.session_state.refresh +=1
-
-    # ---------- CUSTOM INPUT ----------
-    custom_amount = st.number_input("Or type amount (ml)", min_value=0, step=50, value=250)
-    if st.button("Add entry"):
-        if custom_amount <= 0:
-            st.warning("Stop trying stupid things, talha. You can't undrink water.")
-        else:
-            now = add_entry(custom_amount)
-            st.success(f"Added {custom_amount} ml at {now.strftime('%I:%M %p')}")
-            data = load_data()
-            total_today = get_daily_total(data, date.today())
-            if total_today >= DAILY_GOAL:
-                st.success("🎉 HYDRATION SUPREMACY! You hit today's goal!")
-
-            # Meme + caption
-            meme = random.choice(MEMES)
-            st.image(meme['url'], use_container_width=True)
-            st.markdown(f"<div style='text-align:center; font-size:14px; margin-top:4px;'>{meme['caption']}</div>", unsafe_allow_html=True)
-
-            # Separate message
-            msg = random.choice(MESSAGES)
-            st.markdown(f"<div class='custom-box'>{msg['message']}</div>", unsafe_allow_html=True)
-
-            st.session_state.refresh +=1
-
-    st.markdown("---")
-    view_date = st.date_input("View date", value=date.today(), key="view_date")
-
-    # ---------- VIEW & DELETE BLOCK ----------
-    st.subheader(f"Logs for {view_date.isoformat()}")
-    data = load_data()
-    view_df = data[data['Date'] == view_date].copy()
-    if not view_df.empty:
-        view_df_display = view_df.reset_index().rename(columns={"index":"row_index"})
-        view_df_display["ID"] = view_df_display["row_index"] + 1
-        view_df_display["Time"] = view_df_display["Time"].apply(lambda t: datetime.strptime(str(t), "%H:%M:%S").strftime("%I:%M %p"))
-        st.dataframe(view_df_display[["ID","Time","Amount (ml)"]], use_container_width=True)
-
-        to_delete_id = st.multiselect("Select rows to delete (ID)", options=list(view_df_display["ID"]))
-        real_to_delete = [view_df_display.loc[view_df_display["ID"]==row,"row_index"].values[0] for row in to_delete_id]
-
-        if st.button("Delete selected"):
-            if real_to_delete:
-                delete_entries(real_to_delete)
-                st.success("Deleted selected entries.")
-                st.session_state.refresh +=1
-            else:
-                st.warning("Pick at least one row to delete.")
-    else:
-        st.write("No entries for this date yet. Add one above!")
-
-with col2:
-    st.subheader("Imagine not drinking water.")
-    total_today = get_daily_total(data, view_date)
-    st.write(f"Total for {view_date.isoformat()}: **{total_today} ml**")
-    progress_val = min(total_today/DAILY_GOAL,1.0)
-    st.progress(progress_val)
-    st.write(f"{int(progress_val*100)}% of {DAILY_GOAL} ml")
-
-    st.markdown("---")
-    dates, totals = get_history_aggregated(data,HISTORY_DAYS)
-    chart_df = pd.DataFrame({"date":[d.isoformat() for d in dates],"total":totals})
-    st.write("Last week on cat's water rehab:")
-    st.bar_chart(chart_df.set_index("date")["total"])
-
-    st.markdown("---")
-    st.subheader("Ominous motivation.")
-    st.write("Your drinking habits are not up to the mark.")
-    if theme_choice=="Funny & chaotic":
-        meme = random.choice(MEMES)
-        st.image(meme['url'], use_container_width=True)
-        st.markdown(f"<div style='text-align:center; font-size:14px; margin-top:4px;'>{meme['caption']}</div>", unsafe_allow_html=True)
-
-        msg = random.choice(MESSAGES)
-        st.markdown(f"<div class='custom-box'>{msg['message']}</div>", unsafe_allow_html=True)
-    else:
-        calm_msgs = [
-            "Small steps — sip-by-sip.",
-            "Consistency > intensity.",
-            "One glass at a time."
-        ]
-        st.markdown(f"<div class='custom-box'>{random.choice(calm_msgs)}</div>", unsafe_allow_html=True)
-
-st.markdown("---")
-if st.checkbox("Show raw data (CSV)"):
-    st.dataframe(load_data(), use_container_width=True)
-
-
-
-
-
