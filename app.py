@@ -7,16 +7,6 @@ st.set_page_config(
     layout="centered",            # Options: "centered" or "wide"
     initial_sidebar_state="auto"  # Options: "auto", "expanded", "collapsed"
 )
-st.markdown(
-    """
-    <link rel="apple-touch-icon" sizes="180x180" href="icon-512.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="icon-512.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="icon-512.png">
-    """,
-    unsafe_allow_html=True
-)
-
 
 # ---------- OPTIONAL: CACHE CLEAR (helps with old favicon issues) ----------
 st.cache_data.clear()
@@ -277,6 +267,7 @@ with col2:
 st.markdown("---")
 if st.checkbox("Show raw data (CSV)"):
     st.dataframe(load_data(), use_container_width=True)
+
 
 
 
