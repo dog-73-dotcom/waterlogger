@@ -1,4 +1,16 @@
 import streamlit as st
+
+# ---------- STREAMLIT PAGE CONFIG ----------
+st.set_page_config(
+    page_title="Hydrochaotic",   # Your app name
+    page_icon="icon.png",         # Your custom icon (must be in same folder as app.py)
+    layout="centered",            # Options: "centered" or "wide"
+    initial_sidebar_state="auto"  # Options: "auto", "expanded", "collapsed"
+)
+
+# ---------- OPTIONAL: CACHE CLEAR (helps with old favicon issues) ----------
+st.cache_data.clear()
+import streamlit as st
 import pandas as pd
 from datetime import datetime, date, timedelta
 import os
@@ -255,4 +267,5 @@ with col2:
 st.markdown("---")
 if st.checkbox("Show raw data (CSV)"):
     st.dataframe(load_data(), use_container_width=True)
+
 
