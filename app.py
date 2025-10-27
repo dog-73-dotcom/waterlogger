@@ -130,7 +130,7 @@ st.set_page_config(page_title="HydroChaotic 💧", layout="centered", initial_si
 st.markdown("""
 <div style="display:flex; align-items:center; gap:12px;">
   <div style="font-size:28px;">💧</div>
-  <div style="font-size:30px; font-weight:600;">WaterYouDoing - Brought to you by The Council</div>
+  <div style="font-size:32px; font-weight:600;">WaterYouDoing</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -151,10 +151,10 @@ with st.sidebar:
 col1, col2 = st.columns([1.5,1])
 
 with col1:
-    st.subheader("Add water intake")
+    st.subheader("The water won't drink itself.")
 
     # ---------- QUICK BUTTONS ----------
-    quick_amounts = [100, 200, 250, 500]
+    quick_amounts = [250, 500]
     quick_cols = st.columns(len(quick_amounts))
     for idx, amt in enumerate(quick_amounts):
         with quick_cols[idx]:
@@ -172,9 +172,9 @@ with col1:
 
     # ---------- CUSTOM INPUT ----------
     custom_amount = st.number_input("Or type amount (ml)", min_value=0, step=50, value=250)
-    if st.button("Add current time entry"):
+    if st.button("Add entry"):
         if custom_amount <= 0:
-            st.warning("Enter a positive amount!")
+            st.warning("Stop trying stupid things, talha. You can't undrink water.")
         else:
             now = add_entry(custom_amount)
             st.success(f"Added {custom_amount} ml at {now.strftime('%I:%M %p')}")
@@ -231,7 +231,7 @@ with col2:
     st.markdown("---")
     dates, totals = get_history_aggregated(data,HISTORY_DAYS)
     chart_df = pd.DataFrame({"date":[d.isoformat() for d in dates],"total":totals})
-    st.write("Last 7 days")
+    st.write("Last week on cat's water rehab:")
     st.bar_chart(chart_df.set_index("date")["total"])
 
     st.markdown("---")
@@ -255,3 +255,4 @@ with col2:
 st.markdown("---")
 if st.checkbox("Show raw data (CSV)"):
     st.dataframe(load_data(), use_container_width=True)
+
