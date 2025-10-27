@@ -13,7 +13,6 @@ st.markdown("""
 <link rel="manifest" href="manifest.json">
 """, unsafe_allow_html=True)
 
-
 # ---------- CONFIG ----------
 CSV_FILE = "data.csv"
 DAILY_GOAL = 3000  # ml
@@ -265,6 +264,7 @@ with col2:
 st.markdown("---")
 if st.checkbox("Show raw data (CSV)"):
     st.dataframe(load_data(), use_container_width=True)
+
 
 
 
