@@ -4,10 +4,6 @@ from datetime import datetime, date, timedelta
 import os
 import random
 st.set_page_config(
-    st.markdown("""
-<link rel="manifest" href="manifest.json">
-""", unsafe_allow_html=True)
-
     page_title="WaterYouDoing",
     page_icon="icon.png",
     layout="centered",
