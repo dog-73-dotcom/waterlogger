@@ -6,6 +6,7 @@ headless = true
 
 [browser]
 gatherUsageStats = false
+favicon = "icon.png"  # <-- add this line
 
 [ui]
 hideTopBar = false
