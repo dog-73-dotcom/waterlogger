@@ -131,7 +131,7 @@ div.stButton > button {
 """, unsafe_allow_html=True)
 
 # ---------- UI ----------
-st.set_page_config(page_title="HydroChaotic 💧", layout="centered", initial_sidebar_state="expanded")
+st.set_page_config(page_title="WaterYouDoing 💧", layout="centered", initial_sidebar_state="expanded")
 
 st.markdown("""
 <div style="display:flex; align-items:center; gap:12px;">
@@ -261,6 +261,7 @@ with col2:
 st.markdown("---")
 if st.checkbox("Show raw data (CSV)"):
     st.dataframe(load_data(), use_container_width=True)
+
 
 
 
