@@ -4,7 +4,7 @@ from datetime import datetime, date, timedelta
 import os
 import random
 st.set_page_config(
-    page_title="Hydrochaotic",
+    page_title="WaterYouDoing",
     page_icon="icon.png",
     layout="centered",
     initial_sidebar_state="auto"
@@ -261,6 +261,7 @@ with col2:
 st.markdown("---")
 if st.checkbox("Show raw data (CSV)"):
     st.dataframe(load_data(), use_container_width=True)
+
 
 
 
