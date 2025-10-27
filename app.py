@@ -154,7 +154,7 @@ with col1:
     st.subheader("Add water intake")
 
     # ---------- QUICK BUTTONS ----------
-    quick_amounts = [100, 200, 250, 500]
+    quick_amounts = [250, 500]
     quick_cols = st.columns(len(quick_amounts))
     for idx, amt in enumerate(quick_amounts):
         with quick_cols[idx]:
@@ -172,9 +172,9 @@ with col1:
 
     # ---------- CUSTOM INPUT ----------
     custom_amount = st.number_input("Or type amount (ml)", min_value=0, step=50, value=250)
-    if st.button("Add current time entry"):
+    if st.button("Add entry"):
         if custom_amount <= 0:
-            st.warning("Enter a positive amount!")
+            st.warning("Stop trying stupid things, lil bro")
         else:
             now = add_entry(custom_amount)
             st.success(f"Added {custom_amount} ml at {now.strftime('%I:%M %p')}")
@@ -255,4 +255,5 @@ with col2:
 st.markdown("---")
 if st.checkbox("Show raw data (CSV)"):
     st.dataframe(load_data(), use_container_width=True)
+
 
