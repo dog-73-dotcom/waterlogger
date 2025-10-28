@@ -3,6 +3,9 @@ import pandas as pd
 from datetime import datetime, date, timedelta
 import os
 import random
+import pytz
+
+# ---------- CONFIG ----------
 st.set_page_config(
     page_title="WaterYouDoing",
     page_icon="icon.png",
@@ -13,10 +16,10 @@ st.markdown("""
 <link rel="manifest" href="manifest.json">
 """, unsafe_allow_html=True)
 
-# ---------- CONFIG ----------
 CSV_FILE = "data.csv"
 DAILY_GOAL = 3000  # ml
 HISTORY_DAYS = 7
+TZ = pytz.timezone("Etc/GMT-4")  # Set timezone to GMT+4 (Oman/UAE time)
 
 # ---------- MESSAGES ----------
 MESSAGES = [
@@ -79,7 +82,7 @@ def save_data(df):
     df_to_save.to_csv(CSV_FILE, index=False)
 
 def add_entry(amount_ml):
-    now = datetime.now()
+    now = datetime.now(TZ)
     new_row = {
         "Date": now.date(),
         "Time": now.time().replace(microsecond=0).isoformat(),
@@ -134,8 +137,6 @@ div.stButton > button {
 """, unsafe_allow_html=True)
 
 # ---------- UI ----------
-st.set_page_config(page_title="WaterYouDoing 💧", layout="centered", initial_sidebar_state="expanded")
-
 st.markdown("""
 <div style="display:flex; align-items:center; gap:12px;">
   <div style="font-size:28px;">💧</div>
@@ -162,7 +163,6 @@ col1, col2 = st.columns([1.5,1])
 with col1:
     st.subheader("Add water intake")
 
-    # ---------- QUICK BUTTONS ----------
     quick_amounts = [250, 500]
     quick_cols = st.columns(len(quick_amounts))
     for idx, amt in enumerate(quick_amounts):
@@ -171,15 +171,12 @@ with col1:
                 now = add_entry(amt)
                 st.success(f"Added {amt} ml at {now.strftime('%I:%M %p')}")
 
-                # Meme image + caption
                 meme = random.choice(MEMES)
                 st.image(meme['url'], use_container_width=True)
                 st.markdown(f"<div style='text-align:center; font-size:14px; margin-top:4px;'>{meme['caption']}</div>", unsafe_allow_html=True)
 
-
                 st.session_state.refresh +=1
 
-    # ---------- CUSTOM INPUT ----------
     custom_amount = st.number_input("Or type amount (ml)", min_value=0, step=50, value=250)
     if st.button("Add entry"):
         if custom_amount <= 0:
@@ -192,12 +189,10 @@ with col1:
             if total_today >= DAILY_GOAL:
                 st.success("🎉 HYDRATION SUPREMACY! You hit today's goal!")
 
-            # Meme + caption
             meme = random.choice(MEMES)
             st.image(meme['url'], use_container_width=True)
             st.markdown(f"<div style='text-align:center; font-size:14px; margin-top:4px;'>{meme['caption']}</div>", unsafe_allow_html=True)
 
-            # Separate message
             msg = random.choice(MESSAGES)
             st.markdown(f"<div class='custom-box'>{msg['message']}</div>", unsafe_allow_html=True)
 
@@ -213,7 +208,12 @@ with col1:
     if not view_df.empty:
         view_df_display = view_df.reset_index().rename(columns={"index":"row_index"})
         view_df_display["ID"] = view_df_display["row_index"] + 1
-        view_df_display["Time"] = view_df_display["Time"].apply(lambda t: datetime.strptime(str(t), "%H:%M:%S").strftime("%I:%M %p"))
+
+        # ✅ FIXED: Removed invalid astimezone() call
+        view_df_display["Time"] = view_df_display["Time"].apply(
+            lambda t: datetime.strptime(str(t), "%H:%M:%S").strftime("%I:%M %p")
+        )
+
         st.dataframe(view_df_display[["ID","Time","Amount (ml)"]], use_container_width=True)
 
         to_delete_id = st.multiselect("Select rows to delete (ID)", options=list(view_df_display["ID"]))
@@ -264,4 +264,3 @@ with col2:
 st.markdown("---")
 if st.checkbox("Show raw data (CSV)"):
     st.dataframe(load_data(), use_container_width=True)
-
