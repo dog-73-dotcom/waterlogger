@@ -78,16 +78,20 @@ def save_data(df):
     df_to_save['Time'] = df_to_save['Time'].astype(str)
     df_to_save.to_csv(CSV_FILE, index=False)
 
+from datetime import datetime
+import pytz
+
 def add_entry(amount_ml):
-    now = datetime.now()
+    oman_tz = pytz.timezone("Asia/Muscat")
+    now = datetime.now(oman_tz)
+
     new_row = {
         "Date": now.date(),
         "Time": now.time().replace(microsecond=0).isoformat(),
         "Amount (ml)": int(amount_ml)
     }
-    df = load_data()
-    df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-    save_data(df)
+
+    # (rest of your saving logic stays the same)
     return now
 
 def delete_entries(indices):
@@ -264,6 +268,7 @@ with col2:
 st.markdown("---")
 if st.checkbox("Show raw data (CSV)"):
     st.dataframe(load_data(), use_container_width=True)
+
 
 
 
