@@ -169,18 +169,21 @@ with col1:
     quick_amounts = [250, 500]
     quick_cols = st.columns(len(quick_amounts))
     for idx, amt in enumerate(quick_amounts):
-        with quick_cols[idx]:
-            if st.button(f"+{amt} ml", key=f"quick_{amt}"):
-                now = add_entry(amt)
-                st.success(f"Added {amt} ml at {now.strftime('%I:%M %p')}")
+    with quick_cols[idx]:
+        if st.button(f"+{amt} ml", key=f"quick_{amt}"):
+            now = add_entry(amt)
+            st.success(f"Added {amt} ml at {now.strftime('%I:%M %p')}")
 
             # Meme image + caption
             meme = random.choice(MEMES)
             st.image(meme['url'], use_container_width=True)
-            st.markdown(f"<div style='text-align:center; font-size:14px; margin-top:4px;'>{meme['caption']}</div>", unsafe_allow_html=True)
+            st.markdown(
+                f"<div style='text-align:center; font-size:14px; margin-top:4px;'>{meme['caption']}</div>",
+                unsafe_allow_html=True
+            )
 
+            st.session_state.refresh += 1
 
-                st.session_state.refresh +=1
 
     # ---------- CUSTOM INPUT ----------
     custom_amount = st.number_input("Or type amount (ml)", min_value=0, step=50, value=250)
@@ -267,6 +270,7 @@ with col2:
 st.markdown("---")
 if st.checkbox("Show raw data (CSV)"):
     st.dataframe(load_data(), use_container_width=True)
+
 
 
 
