@@ -80,14 +80,23 @@ def save_data(df):
 
 from datetime import datetime
 import pytz
+import pandas as pd
 
 def add_entry(amount_ml):
-    now = datetime.now()
+    oman_tz = pytz.timezone("Asia/Muscat")
+    now = datetime.now(oman_tz)
+
     new_row = {
-        "Date": now.date(),
-        "Time": now.time().replace(microsecond=0).isoformat(),
+        "Date": now.date().isoformat(),  # keep as string for CSV
+        "Time": now.strftime("%H:%M:%S"),
         "Amount (ml)": int(amount_ml)
     }
+
+    data = load_data()
+    data = pd.concat([data, pd.DataFrame([new_row])], ignore_index=True)
+    data.to_csv(CSV_FILE, index=False)
+
+    return now
 
 def delete_entries(indices):
     df = load_data()
@@ -168,7 +177,7 @@ with col1:
         with quick_cols[idx]:
             if st.button(f"+{amt} ml", key=f"quick_{amt}"):
                 now = add_entry(amt)
-                st.success(f"Added {amt} ml at {now.strftime('%I:%M %p')}")
+st.success(f"Added {amt} ml at {now.strftime('%I:%M %p')}")
 
                 # Meme image + caption
                 meme = random.choice(MEMES)
@@ -263,6 +272,7 @@ with col2:
 st.markdown("---")
 if st.checkbox("Show raw data (CSV)"):
     st.dataframe(load_data(), use_container_width=True)
+
 
 
 
