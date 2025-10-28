@@ -82,17 +82,12 @@ from datetime import datetime
 import pytz
 
 def add_entry(amount_ml):
-    oman_tz = pytz.timezone("Asia/Muscat")
-    now = datetime.now(oman_tz)
-
+    now = datetime.now()
     new_row = {
         "Date": now.date(),
         "Time": now.time().replace(microsecond=0).isoformat(),
         "Amount (ml)": int(amount_ml)
     }
-
-    # (rest of your saving logic stays the same)
-    return now
 
 def delete_entries(indices):
     df = load_data()
@@ -268,6 +263,7 @@ with col2:
 st.markdown("---")
 if st.checkbox("Show raw data (CSV)"):
     st.dataframe(load_data(), use_container_width=True)
+
 
 
 
