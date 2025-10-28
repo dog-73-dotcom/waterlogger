@@ -4,11 +4,14 @@ from datetime import datetime, date, timedelta
 import os
 import random
 st.set_page_config(
-    page_title="Hydrochaotic",   # Your app name
-    page_icon="icon.png",         # Browser tab icon
-    layout="centered",            # Options: "centered" or "wide"
-    initial_sidebar_state="auto"  # Options: "auto", "expanded", "collapsed"
+    page_title="WaterYouDoing",
+    page_icon="icon.png",
+    layout="centered",
+    initial_sidebar_state="auto"
 )
+st.markdown("""
+<link rel="manifest" href="manifest.json">
+""", unsafe_allow_html=True)
 
 # ---------- CONFIG ----------
 CSV_FILE = "data.csv"
@@ -131,7 +134,7 @@ div.stButton > button {
 """, unsafe_allow_html=True)
 
 # ---------- UI ----------
-st.set_page_config(page_title="HydroChaotic 💧", layout="centered", initial_sidebar_state="expanded")
+st.set_page_config(page_title="WaterYouDoing 💧", layout="centered", initial_sidebar_state="expanded")
 
 st.markdown("""
 <div style="display:flex; align-items:center; gap:12px;">
@@ -261,3 +264,4 @@ with col2:
 st.markdown("---")
 if st.checkbox("Show raw data (CSV)"):
     st.dataframe(load_data(), use_container_width=True)
+
