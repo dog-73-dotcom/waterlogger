@@ -180,10 +180,10 @@ with col1:
                 now = add_entry(amt)
                 st.success(f"Added {amt} ml at {now.strftime('%I:%M %p')}")
 
-     # Meme image + caption
-                meme = random.choice(MEMES)
-                st.image(meme['url'], use_container_width=True)
-                st.markdown(f"<div style='text-align:center; font-size:14px; margin-top:4px;'>{meme['caption']}</div>", unsafe_allow_html=True)
+            # Meme image + caption
+            meme = random.choice(MEMES)
+            st.image(meme['url'], use_container_width=True)
+            st.markdown(f"<div style='text-align:center; font-size:14px; margin-top:4px;'>{meme['caption']}</div>", unsafe_allow_html=True)
 
 
                 st.session_state.refresh +=1
@@ -273,6 +273,7 @@ with col2:
 st.markdown("---")
 if st.checkbox("Show raw data (CSV)"):
     st.dataframe(load_data(), use_container_width=True)
+
 
 
 
