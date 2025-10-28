@@ -91,6 +91,7 @@ def add_entry(amount_ml):
         "Time": now.strftime("%H:%M:%S"),
         "Amount (ml)": int(amount_ml)
     }
+    return now
 
     data = load_data()
     data = pd.concat([data, pd.DataFrame([new_row])], ignore_index=True)
@@ -177,9 +178,9 @@ with col1:
         with quick_cols[idx]:
             if st.button(f"+{amt} ml", key=f"quick_{amt}"):
                 now = add_entry(amt)
-st.success(f"Added {amt} ml at {now.strftime('%I:%M %p')}")
+                st.success(f"Added {amt} ml at {now.strftime('%I:%M %p')}")
 
-                # Meme image + caption
+     # Meme image + caption
                 meme = random.choice(MEMES)
                 st.image(meme['url'], use_container_width=True)
                 st.markdown(f"<div style='text-align:center; font-size:14px; margin-top:4px;'>{meme['caption']}</div>", unsafe_allow_html=True)
@@ -272,6 +273,7 @@ with col2:
 st.markdown("---")
 if st.checkbox("Show raw data (CSV)"):
     st.dataframe(load_data(), use_container_width=True)
+
 
 
 
