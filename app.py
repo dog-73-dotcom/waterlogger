@@ -206,18 +206,23 @@ with col1:
     data = load_data()
     view_df = data[data['Date'] == view_date].copy()
     if not view_df.empty:
-        view_df_display = view_df.reset_index().rename(columns={"index":"row_index"})
-        view_df_display["ID"] = view_df_display["row_index"] + 1
+        # Reset index WITHOUT creating 'row_index' column
+        view_df_display = view_df.reset_index(drop=True)
 
-        # ✅ FIXED: Removed invalid astimezone() call
+        # ID starts at 1 for the first entry of the date
+        view_df_display["ID"] = range(1, len(view_df_display)+1)
+
+        # Format time
         view_df_display["Time"] = view_df_display["Time"].apply(
             lambda t: datetime.strptime(str(t), "%H:%M:%S").strftime("%I:%M %p")
         )
 
-        st.dataframe(view_df_display[["ID","Time","Amount (ml)"]], use_container_width=True)
+        st.dataframe(view_df_display[["ID","Time","Amount (ml)"]], use_container_width=True, hide_index=True)
+
 
         to_delete_id = st.multiselect("Select rows to delete (ID)", options=list(view_df_display["ID"]))
-        real_to_delete = [view_df_display.loc[view_df_display["ID"]==row,"row_index"].values[0] for row in to_delete_id]
+        
+        real_to_delete = [view_df_display.index[row-1] for row in to_delete_id]
 
         if st.button("Delete selected"):
             if real_to_delete:
