@@ -264,5 +264,3 @@ with col2:
 st.markdown("---")
 if st.checkbox("Show raw data (CSV)"):
     st.dataframe(load_data(), use_container_width=True)
-
-current code, want to either remove both the ID columns from the logs table, or make sure that the log ID resets whenever the date changes
