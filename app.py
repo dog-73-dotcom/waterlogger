@@ -33,6 +33,14 @@ MESSAGES = [
 
 # ---------- MEMES ----------
 MEMES = [
+    {"url":"https://i.imgflip.com/aaiih1.jpg","caption":""},
+    {"url":"https://i.imgflip.com/aaiinq.jpg","caption":""},
+    {"url":"https://i.imgflip.com/aaijhu.jpg","caption":""},
+    {"url":"https://i.imgflip.com/aailz2.jpg","caption":""},
+    {"url":"https://i.imgflip.com/aaim2z.jpg","caption":""},
+    {"url":"https://i.imgflip.com/aaimit.jpg","caption":""},
+    {"url":"https://i.imgflip.com/aaios5.jpg","caption":""},
+    # Keep old memes
     {"url":"https://i.pinimg.com/1200x/5a/8b/0e/5a8b0e6b61977dab8509595c3998afec.jpg","caption":"relating to this isnt funny."},
     {"url":"https://i.pinimg.com/1200x/6a/dd/a7/6adda7b08880e234247df0c566b8ebc3.jpg","caption":"kiun nhin pi rhe aap paani."},
     {"url":"https://i.pinimg.com/1200x/3e/31/7f/3e317fdabd3c015819e6e096ca030e7f.jpg","caption":"You're not the only one with cameras."},
@@ -173,7 +181,8 @@ with col1:
 
                 meme = random.choice(MEMES)
                 st.image(meme['url'], use_container_width=True)
-                st.markdown(f"<div style='text-align:center; font-size:14px; margin-top:4px;'>{meme['caption']}</div>", unsafe_allow_html=True)
+                if meme['caption']:
+                    st.markdown(f"<div style='text-align:center; font-size:14px; margin-top:4px;'>{meme['caption']}</div>", unsafe_allow_html=True)
 
                 st.session_state.refresh +=1
 
@@ -191,7 +200,8 @@ with col1:
 
             meme = random.choice(MEMES)
             st.image(meme['url'], use_container_width=True)
-            st.markdown(f"<div style='text-align:center; font-size:14px; margin-top:4px;'>{meme['caption']}</div>", unsafe_allow_html=True)
+            if meme['caption']:
+                st.markdown(f"<div style='text-align:center; font-size:14px; margin-top:4px;'>{meme['caption']}</div>", unsafe_allow_html=True)
 
             msg = random.choice(MESSAGES)
             st.markdown(f"<div class='custom-box'>{msg['message']}</div>", unsafe_allow_html=True)
@@ -249,7 +259,8 @@ with col2:
     if theme_choice=="Funny & chaotic":
         meme = random.choice(MEMES)
         st.image(meme['url'], use_container_width=True)
-        st.markdown(f"<div style='text-align:center; font-size:14px; margin-top:4px;'>{meme['caption']}</div>", unsafe_allow_html=True)
+        if meme['caption']:
+            st.markdown(f"<div style='text-align:center; font-size:14px; margin-top:4px;'>{meme['caption']}</div>", unsafe_allow_html=True)
 
         msg = random.choice(MESSAGES)
         st.markdown(f"<div class='custom-box'>{msg['message']}</div>", unsafe_allow_html=True)
@@ -264,5 +275,3 @@ with col2:
 st.markdown("---")
 if st.checkbox("Show raw data (CSV)"):
     st.dataframe(load_data(), use_container_width=True)
-
-
