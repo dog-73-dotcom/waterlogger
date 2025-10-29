@@ -214,7 +214,7 @@ with col1:
             lambda t: datetime.strptime(str(t), "%H:%M:%S").strftime("%I:%M %p")
         )
 
-        st.dataframe(view_df_display[["ID","Time","Amount (ml)"]], use_container_width=True, hide_index=True)
+        st.dataframe(view_df_display[["ID","Time","Amount (ml)"]], use_container_width=True)
 
         to_delete_id = st.multiselect("Select rows to delete (ID)", options=list(view_df_display["ID"]))
         real_to_delete = [view_df_display.loc[view_df_display["ID"]==row,"row_index"].values[0] for row in to_delete_id]
@@ -264,4 +264,5 @@ with col2:
 st.markdown("---")
 if st.checkbox("Show raw data (CSV)"):
     st.dataframe(load_data(), use_container_width=True)
+
 
