@@ -16,29 +16,6 @@ st.markdown("""
 <link rel="manifest" href="manifest.json">
 """, unsafe_allow_html=True)
 
-# ---------- SERVICE WORKER + NOTIFICATIONS ----------
-st.markdown("""
-<script>
-// Register Service Worker
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/service-worker.js").then(() => {
-    console.log("✅ Service Worker registered");
-  }).catch((err) => {
-    console.log("❌ Service Worker registration failed:", err);
-  });
-}
-
-// Ask for notification permission
-async function requestNotificationPermission() {
-  const permission = await Notification.requestPermission();
-  if (permission === "granted") {
-    new Notification("💧 WaterYouDoing is ready to remind you!");
-  }
-}
-requestNotificationPermission();
-</script>
-""", unsafe_allow_html=True)
-
 CSV_FILE = "data.csv"
 DAILY_GOAL = 2000  # ml
 HISTORY_DAYS = 7
@@ -148,7 +125,7 @@ def get_history_aggregated(df, days=HISTORY_DAYS):
 if "refresh" not in st.session_state:
     st.session_state.refresh = 0
 
-# ---------- CSS ----------
+# ---------- CSS FOR BUTTONS ----------
 st.markdown("""
 <style>
 div.stButton > button {
@@ -178,7 +155,7 @@ st.markdown("""
 init_csv()
 data = load_data()
 
-# ---------- SIDEBAR ----------
+# Sidebar
 with st.sidebar:
     st.header("Random stuff you dont need to worry about.")
     st.write("Daily goal:", f"**{DAILY_GOAL} ml**")
@@ -188,7 +165,7 @@ with st.sidebar:
     st.write("Theme:")
     theme_choice = st.radio("", ["Funny & chaotic", "Minimal & calm"], index=0)
 
-# ---------- MAIN ----------
+# Columns layout rebalanced
 col1, col2 = st.columns([1.5,1])
 
 with col1:
@@ -241,12 +218,17 @@ with col1:
     if not view_df.empty:
         view_df_display = view_df.reset_index().rename(columns={"index":"row_index"})
         view_df_display["ID"] = view_df_display["row_index"] + 1
+
+        # ✅ FIXED: Removed invalid astimezone() call
         view_df_display["Time"] = view_df_display["Time"].apply(
             lambda t: datetime.strptime(str(t), "%H:%M:%S").strftime("%I:%M %p")
         )
+
         st.dataframe(view_df_display[["ID","Time","Amount (ml)"]], use_container_width=True)
+
         to_delete_id = st.multiselect("Select rows to delete (ID)", options=list(view_df_display["ID"]))
         real_to_delete = [view_df_display.loc[view_df_display["ID"]==row,"row_index"].values[0] for row in to_delete_id]
+
         if st.button("Delete selected"):
             if real_to_delete:
                 delete_entries(real_to_delete)
@@ -279,6 +261,7 @@ with col2:
         st.image(meme['url'], use_container_width=True)
         if meme['caption']:
             st.markdown(f"<div style='text-align:center; font-size:14px; margin-top:4px;'>{meme['caption']}</div>", unsafe_allow_html=True)
+
         msg = random.choice(MESSAGES)
         st.markdown(f"<div class='custom-box'>{msg['message']}</div>", unsafe_allow_html=True)
     else:
@@ -292,19 +275,3 @@ with col2:
 st.markdown("---")
 if st.checkbox("Show raw data (CSV)"):
     st.dataframe(load_data(), use_container_width=True)
-
-# ---------- TEST BUTTON FOR LOCAL NOTIFICATION ----------
-if st.button("Send Test Notification 💧"):
-    st.markdown("""
-    <script>
-    if (Notification.permission === "granted") {
-      new Notification("💧 Time to hydrate!", {
-        body: "Go drink water, champ!",
-        icon: "/favicon.png"
-      });
-    } else {
-      alert("Notifications are blocked. Please enable them in your browser settings!");
-    }
-    </script>
-    """, unsafe_allow_html=True)
-
