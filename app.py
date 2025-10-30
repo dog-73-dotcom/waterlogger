@@ -17,7 +17,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 CSV_FILE = "data.csv"
-DAILY_GOAL = 3000  # ml
+DAILY_GOAL = 2000  # ml
 HISTORY_DAYS = 7
 TZ = pytz.timezone("Etc/GMT-4")  # Set timezone to GMT+4 (Oman/UAE time)
 
@@ -275,3 +275,4 @@ with col2:
 st.markdown("---")
 if st.checkbox("Show raw data (CSV)"):
     st.dataframe(load_data(), use_container_width=True)
+
