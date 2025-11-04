@@ -17,7 +17,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 CSV_FILE = "data.csv"
-DAILY_GOAL = 2000  # ml
+DAILY_GOAL = 3000  # ml
 HISTORY_DAYS = 7
 TZ = pytz.timezone("Etc/GMT-4")  # Set timezone to GMT+4 (Oman/UAE time)
 
@@ -40,13 +40,25 @@ MEMES = [
     {"url":"https://i.imgflip.com/aaim2z.jpg","caption":""},
     {"url":"https://i.imgflip.com/aaimit.jpg","caption":""},
     {"url":"https://i.imgflip.com/aaios5.jpg","caption":""},
-    # Keep old memes
-    {"url":"https://i.pinimg.com/1200x/5a/8b/0e/5a8b0e6b61977dab8509595c3998afec.jpg","caption":"relating to this isnt funny."},
+    # Keep old memes (removed one marked with ** **)
     {"url":"https://i.pinimg.com/1200x/6a/dd/a7/6adda7b08880e234247df0c566b8ebc3.jpg","caption":"kiun nhin pi rhe aap paani."},
     {"url":"https://i.pinimg.com/1200x/3e/31/7f/3e317fdabd3c015819e6e096ca030e7f.jpg","caption":"You're not the only one with cameras."},
     {"url":"https://i.pinimg.com/1200x/b2/af/75/b2af75f216dd5cd75379789beff5b8a1.jpg","caption":"imagine fardan living longer than you cause he drank water and you didn't."},
     {"url":"https://i.pinimg.com/736x/37/c1/4c/37c14ca7f0d61a2a8db4788c09dd336b.jpg","caption":"me if u dont drink water."},
-    {"url":"https://i.pinimg.com/736x/97/74/cd/9774cd9bd7daead2ac764adb34a0e72f.jpg","caption":"your mom if u need to go to the doc again."}
+    {"url":"https://i.pinimg.com/736x/97/74/cd/9774cd9bd7daead2ac764adb34a0e72f.jpg","caption":"your mom if u need to go to the doc again."},
+
+    # New memes (no captions)
+    {"url":"https://i.imgflip.com/ab2rs7.jpg","caption":""},
+    {"url":"https://i.imgflip.com/ab2s52.jpg","caption":""},
+    {"url":"https://i.imgflip.com/ab2seh.jpg","caption":""},
+    {"url":"https://i.imgflip.com/ab2sld.jpg","caption":""},
+    {"url":"https://i.imgflip.com/ab2sup.jpg","caption":""},
+    {"url":"https://i.imgflip.com/ab2syj.jpg","caption":""},
+    {"url":"https://i.imgflip.com/ab2t61.jpg","caption":""},
+    {"url":"https://i.imgflip.com/ab2thh.jpg","caption":""},
+    {"url":"https://i.imgflip.com/ab2tqs.jpg","caption":""},
+    {"url":"https://i.imgflip.com/ab2ttv.jpg","caption":""},
+    {"url":"https://i.imgflip.com/ab2txr.jpg","caption":""}
 ]
 
 # ---------- HELPERS ----------
