@@ -19,7 +19,7 @@ st.markdown("""
 CSV_FILE = "data.csv"
 DAILY_GOAL = 2000  # ml
 HISTORY_DAYS = 7
-TZ = pytz.timezone("Etc/GMT-4")  # Set timezone to GMT+4 (Oman/UAE time)
+TZ = pytz.timezone("Etc/GMT-4")  # Set timezone
 
 # ---------- MESSAGES ----------
 MESSAGES = [
@@ -40,14 +40,11 @@ MEMES = [
     {"url":"https://i.imgflip.com/aaim2z.jpg","caption":""},
     {"url":"https://i.imgflip.com/aaimit.jpg","caption":""},
     {"url":"https://i.imgflip.com/aaios5.jpg","caption":""},
-    # Keep old memes (removed one marked with ** **)
     {"url":"https://i.pinimg.com/1200x/6a/dd/a7/6adda7b08880e234247df0c566b8ebc3.jpg","caption":"kiun nhin pi rhe aap paani."},
     {"url":"https://i.pinimg.com/1200x/3e/31/7f/3e317fdabd3c015819e6e096ca030e7f.jpg","caption":"You're not the only one with cameras."},
     {"url":"https://i.pinimg.com/1200x/b2/af/75/b2af75f216dd5cd75379789beff5b8a1.jpg","caption":"imagine fardan living longer than you cause he drank water and you didn't."},
     {"url":"https://i.pinimg.com/736x/37/c1/4c/37c14ca7f0d61a2a8db4788c09dd336b.jpg","caption":"me if u dont drink water."},
     {"url":"https://i.pinimg.com/736x/97/74/cd/9774cd9bd7daead2ac764adb34a0e72f.jpg","caption":"your mom if u need to go to the doc again."},
-
-    # New memes (no captions)
     {"url":"https://i.imgflip.com/ab2rs7.jpg","caption":""},
     {"url":"https://i.imgflip.com/ab2s52.jpg","caption":""},
     {"url":"https://i.imgflip.com/ab2seh.jpg","caption":""},
@@ -63,43 +60,56 @@ MEMES = [
 
 # ---------- HELPERS ----------
 def init_csv():
+    """Ensure CSV exists and has correct structure."""
     if not os.path.exists(CSV_FILE):
         df = pd.DataFrame(columns=["Date", "Time", "Amount (ml)"])
         df.to_csv(CSV_FILE, index=False)
         return df
+
     df = pd.read_csv(CSV_FILE)
+
+    # Fix old 2-column format → migrate safely
     if list(df.columns) == ["Date", "Water Intake (ml)"]:
         migrated = pd.DataFrame(columns=["Date", "Time", "Amount (ml)"])
         for _, row in df.iterrows():
-            try:
-                parsed = pd.to_datetime(row["Date"], errors='coerce')
-                d = parsed.date() if not pd.isna(parsed) else row["Date"]
-            except Exception:
-                d = row["Date"]
-            migrated = pd.concat(
-                [migrated, pd.DataFrame([{"Date": d, "Time": "00:00:00", "Amount (ml)": row["Water Intake (ml)"]}])],
-                ignore_index=True
-            )
+            d = pd.to_datetime(row["Date"], errors='coerce')
+            d = d.date() if not pd.isna(d) else row["Date"]
+            migrated.loc[len(migrated)] = [d, "00:00:00", row["Water Intake (ml)"]]
         migrated.to_csv(CSV_FILE, index=False)
         return migrated
-    if "Date" not in df.columns or "Time" not in df.columns or "Amount (ml)" not in df.columns:
+
+    # If wrong columns → reset
+    if set(df.columns) != {"Date", "Time", "Amount (ml)"}:
         df = pd.DataFrame(columns=["Date", "Time", "Amount (ml)"])
         df.to_csv(CSV_FILE, index=False)
-        return df
+
     return df
+
 
 def load_data():
+    """Load CSV safely with correct parsing."""
     df = pd.read_csv(CSV_FILE)
-    df['Date'] = pd.to_datetime(df['Date'], errors='coerce').dt.date
-    df['Time'] = pd.to_datetime(df['Time'], errors='coerce').dt.time.fillna(pd.to_datetime("00:00:00").time())
-    df['Amount (ml)'] = pd.to_numeric(df['Amount (ml)'], errors='coerce').fillna(0).astype(int)
+
+    df["Date"] = pd.to_datetime(df["Date"], errors="coerce").dt.date
+    df["Time"] = pd.to_datetime(df["Time"], errors="coerce").dt.time
+    df["Time"] = df["Time"].fillna(datetime.strptime("00:00:00", "%H:%M:%S").time())
+
+    df["Amount (ml)"] = (
+        pd.to_numeric(df["Amount (ml)"], errors="coerce")
+        .fillna(0)
+        .astype(int)
+    )
+
     return df
 
+
 def save_data(df):
-    df_to_save = df.copy()
-    df_to_save['Date'] = df_to_save['Date'].astype(str)
-    df_to_save['Time'] = df_to_save['Time'].astype(str)
-    df_to_save.to_csv(CSV_FILE, index=False)
+    """Save CSV with safe string formats."""
+    df2 = df.copy()
+    df2["Date"] = df2["Date"].astype(str)
+    df2["Time"] = df2["Time"].astype(str)
+    df2.to_csv(CSV_FILE, index=False)
+
 
 def add_entry(amount_ml):
     now = datetime.now(TZ)
@@ -113,6 +123,7 @@ def add_entry(amount_ml):
     save_data(df)
     return now
 
+
 def delete_entries(indices):
     df = load_data()
     if not indices:
@@ -121,23 +132,23 @@ def delete_entries(indices):
     save_data(df)
     return True
 
+
 def get_daily_total(df, target_date):
-    rows = df[df['Date'] == target_date]
-    return int(rows['Amount (ml)'].sum())
+    return int(df[df["Date"] == target_date]["Amount (ml)"].sum())
+
 
 def get_history_aggregated(df, days=HISTORY_DAYS):
     today = date.today()
     dates = [today - timedelta(days=i) for i in range(days-1, -1, -1)]
-    totals = []
-    for d in dates:
-        totals.append(get_daily_total(df, d))
+    totals = [get_daily_total(df, d) for d in dates]
     return dates, totals
 
-# ---------- SESSION STATE ----------
+
+# ---------- SESSION ----------
 if "refresh" not in st.session_state:
     st.session_state.refresh = 0
 
-# ---------- CSS FOR BUTTONS ----------
+# ---------- CSS ----------
 st.markdown("""
 <style>
 div.stButton > button {
@@ -164,6 +175,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# Load data
 init_csv()
 data = load_data()
 
@@ -177,12 +189,14 @@ with st.sidebar:
     st.write("Theme:")
     theme_choice = st.radio("", ["Funny & chaotic", "Minimal & calm"], index=0)
 
-# Columns layout rebalanced
-col1, col2 = st.columns([1.5,1])
+# Layout
+col1, col2 = st.columns([1.5, 1])
 
+# ---------- LEFT COLUMN ----------
 with col1:
     st.subheader("Add water intake")
 
+    # Quick buttons
     quick_amounts = [250, 500]
     quick_cols = st.columns(len(quick_amounts))
     for idx, amt in enumerate(quick_amounts):
@@ -190,14 +204,11 @@ with col1:
             if st.button(f"+{amt} ml", key=f"quick_{amt}"):
                 now = add_entry(amt)
                 st.success(f"Added {amt} ml at {now.strftime('%I:%M %p')}")
-
                 meme = random.choice(MEMES)
-                st.image(meme['url'], use_container_width=True)
-                if meme['caption']:
-                    st.markdown(f"<div style='text-align:center; font-size:14px; margin-top:4px;'>{meme['caption']}</div>", unsafe_allow_html=True)
+                st.image(meme["url"], use_container_width=True)
+                st.session_state.refresh += 1
 
-                st.session_state.refresh +=1
-
+    # Custom input
     custom_amount = st.number_input("Or type amount (ml)", min_value=0, step=50, value=250)
     if st.button("Add entry"):
         if custom_amount <= 0:
@@ -206,74 +217,81 @@ with col1:
             now = add_entry(custom_amount)
             st.success(f"Added {custom_amount} ml at {now.strftime('%I:%M %p')}")
             data = load_data()
+
             total_today = get_daily_total(data, date.today())
             if total_today >= DAILY_GOAL:
                 st.success("🎉 HYDRATION SUPREMACY! You hit today's goal!")
 
             meme = random.choice(MEMES)
-            st.image(meme['url'], use_container_width=True)
-            if meme['caption']:
-                st.markdown(f"<div style='text-align:center; font-size:14px; margin-top:4px;'>{meme['caption']}</div>", unsafe_allow_html=True)
+            st.image(meme["url"], use_container_width=True)
 
             msg = random.choice(MESSAGES)
             st.markdown(f"<div class='custom-box'>{msg['message']}</div>", unsafe_allow_html=True)
 
-            st.session_state.refresh +=1
+            st.session_state.refresh += 1
 
     st.markdown("---")
-    view_date = st.date_input("View date", value=date.today(), key="view_date")
+    view_date = st.date_input("View date", value=date.today())
 
-    # ---------- VIEW & DELETE BLOCK ----------
+    # Logs
     st.subheader(f"Logs for {view_date.isoformat()}")
     data = load_data()
-    view_df = data[data['Date'] == view_date].copy()
+    view_df = data[data["Date"] == view_date].copy()
+
     if not view_df.empty:
-        view_df_display = view_df.reset_index().rename(columns={"index":"row_index"})
+        view_df_display = view_df.reset_index().rename(columns={"index": "row_index"})
         view_df_display["ID"] = view_df_display["row_index"] + 1
 
-        # ✅ FIXED: Removed invalid astimezone() call
+        # Display time in clean 12hr format
         view_df_display["Time"] = view_df_display["Time"].apply(
             lambda t: datetime.strptime(str(t), "%H:%M:%S").strftime("%I:%M %p")
         )
 
-        st.dataframe(view_df_display[["ID","Time","Amount (ml)"]], use_container_width=True)
+        st.dataframe(
+            view_df_display[["ID", "Time", "Amount (ml)"]],
+            use_container_width=True
+        )
 
-        to_delete_id = st.multiselect("Select rows to delete (ID)", options=list(view_df_display["ID"]))
-        real_to_delete = [view_df_display.loc[view_df_display["ID"]==row,"row_index"].values[0] for row in to_delete_id]
+        to_delete = st.multiselect("Select rows to delete (ID)", view_df_display["ID"])
+        real_ids = [
+            view_df_display.loc[view_df_display["ID"] == i, "row_index"].values[0]
+            for i in to_delete
+        ]
 
         if st.button("Delete selected"):
-            if real_to_delete:
-                delete_entries(real_to_delete)
+            if real_ids:
+                delete_entries(real_ids)
                 st.success("Deleted selected entries.")
-                st.session_state.refresh +=1
+                st.session_state.refresh += 1
             else:
                 st.warning("Pick at least one row to delete.")
     else:
         st.write("No entries for this date yet. Add one above!")
 
+# ---------- RIGHT COLUMN ----------
 with col2:
     st.subheader("Imagine not drinking water.")
+
     total_today = get_daily_total(data, view_date)
     st.write(f"Total for {view_date.isoformat()}: **{total_today} ml**")
-    progress_val = min(total_today/DAILY_GOAL,1.0)
+
+    progress_val = min(total_today / DAILY_GOAL, 1)
     st.progress(progress_val)
-    st.write(f"{int(progress_val*100)}% of {DAILY_GOAL} ml")
+    st.write(f"{int(progress_val * 100)}% of {DAILY_GOAL} ml")
 
     st.markdown("---")
-    dates, totals = get_history_aggregated(data,HISTORY_DAYS)
-    chart_df = pd.DataFrame({"date":[d.isoformat() for d in dates],"total":totals})
+    dates, totals = get_history_aggregated(data)
+    chart_df = pd.DataFrame({"date": [d.isoformat() for d in dates], "total": totals})
     st.write("Last week of cat's water rehab:")
     st.bar_chart(chart_df.set_index("date")["total"])
 
     st.markdown("---")
     st.subheader("Ominous motivation.")
     st.write("Your drinking habits are not up to the mark.")
-    if theme_choice=="Funny & chaotic":
-        meme = random.choice(MEMES)
-        st.image(meme['url'], use_container_width=True)
-        if meme['caption']:
-            st.markdown(f"<div style='text-align:center; font-size:14px; margin-top:4px;'>{meme['caption']}</div>", unsafe_allow_html=True)
 
+    if theme_choice == "Funny & chaotic":
+        meme = random.choice(MEMES)
+        st.image(meme["url"], use_container_width=True)
         msg = random.choice(MESSAGES)
         st.markdown(f"<div class='custom-box'>{msg['message']}</div>", unsafe_allow_html=True)
     else:
@@ -284,7 +302,7 @@ with col2:
         ]
         st.markdown(f"<div class='custom-box'>{random.choice(calm_msgs)}</div>", unsafe_allow_html=True)
 
+# Raw data toggle
 st.markdown("---")
 if st.checkbox("Show raw data (CSV)"):
     st.dataframe(load_data(), use_container_width=True)
-
