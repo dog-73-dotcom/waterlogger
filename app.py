@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import sqlite3
+import sqlalchemy as sa
 import os
 import random
 from datetime import datetime, date, timedelta
@@ -61,46 +61,63 @@ MEMES = [
 ]
 
 # ---------- DATABASE ----------
-def get_conn():
-    return sqlite3.connect(DB_FILE, check_same_thread=False)
+# Uses a hosted Postgres (e.g. Supabase) when credentials are provided via
+# st.secrets["postgres"]["url"] — this survives redeploys/restarts on free hosting.
+# Falls back to a local SQLite file when no secrets are set (handy for local dev/testing).
+
+@st.cache_resource
+def get_engine():
+    if "postgres" in st.secrets:
+        return sa.create_engine(st.secrets["postgres"]["url"], pool_pre_ping=True)
+    return sa.create_engine(f"sqlite:///{DB_FILE}")
+
+
+ENGINE = get_engine()
+IS_POSTGRES = ENGINE.dialect.name == "postgresql"
 
 
 def init_db():
-    """Create the table if it doesn't exist, and migrate an old CSV once if present."""
-    conn = get_conn()
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS entries (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date TEXT NOT NULL,
-            time TEXT NOT NULL,
-            amount_ml INTEGER NOT NULL
-        )
-    """)
-    conn.commit()
+    """Create the table if it doesn't exist, and migrate an old local CSV once if present."""
+    with ENGINE.begin() as conn:
+        if IS_POSTGRES:
+            conn.execute(sa.text("""
+                CREATE TABLE IF NOT EXISTS entries (
+                    id SERIAL PRIMARY KEY,
+                    date TEXT NOT NULL,
+                    time TEXT NOT NULL,
+                    amount_ml INTEGER NOT NULL
+                )
+            """))
+        else:
+            conn.execute(sa.text("""
+                CREATE TABLE IF NOT EXISTS entries (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    date TEXT NOT NULL,
+                    time TEXT NOT NULL,
+                    amount_ml INTEGER NOT NULL
+                )
+            """))
 
     # One-time migration from the old CSV-based version, if it exists and the table is empty
     if os.path.exists(OLD_CSV_FILE):
-        count = conn.execute("SELECT COUNT(*) FROM entries").fetchone()[0]
-        if count == 0:
-            try:
-                old_df = pd.read_csv(OLD_CSV_FILE)
-                if {"Date", "Time", "Amount (ml)"}.issubset(old_df.columns):
-                    for _, row in old_df.iterrows():
-                        conn.execute(
-                            "INSERT INTO entries (date, time, amount_ml) VALUES (?, ?, ?)",
-                            (str(row["Date"]), str(row["Time"]), int(row["Amount (ml)"]))
-                        )
-                    conn.commit()
-                os.rename(OLD_CSV_FILE, OLD_CSV_FILE + ".migrated.bak")
-            except Exception:
-                pass  # don't block app startup over a failed migration
-    conn.close()
+        with ENGINE.begin() as conn:
+            count = conn.execute(sa.text("SELECT COUNT(*) FROM entries")).scalar()
+            if count == 0:
+                try:
+                    old_df = pd.read_csv(OLD_CSV_FILE)
+                    if {"Date", "Time", "Amount (ml)"}.issubset(old_df.columns):
+                        for _, row in old_df.iterrows():
+                            conn.execute(
+                                sa.text("INSERT INTO entries (date, time, amount_ml) VALUES (:d, :t, :a)"),
+                                {"d": str(row["Date"]), "t": str(row["Time"]), "a": int(row["Amount (ml)"])}
+                            )
+                    os.rename(OLD_CSV_FILE, OLD_CSV_FILE + ".migrated.bak")
+                except Exception:
+                    pass  # don't block app startup over a failed migration
 
 
 def load_data():
-    conn = get_conn()
-    df = pd.read_sql("SELECT * FROM entries", conn)
-    conn.close()
+    df = pd.read_sql("SELECT * FROM entries", ENGINE)
 
     if df.empty:
         return pd.DataFrame(columns=["id", "Date", "Time", "Amount (ml)"])
@@ -115,23 +132,20 @@ def load_data():
 
 def add_entry(amount_ml):
     now = datetime.now(TZ)
-    conn = get_conn()
-    conn.execute(
-        "INSERT INTO entries (date, time, amount_ml) VALUES (?, ?, ?)",
-        (now.date().isoformat(), now.time().replace(microsecond=0).isoformat(), int(amount_ml))
-    )
-    conn.commit()
-    conn.close()
+    with ENGINE.begin() as conn:
+        conn.execute(
+            sa.text("INSERT INTO entries (date, time, amount_ml) VALUES (:d, :t, :a)"),
+            {"d": now.date().isoformat(), "t": now.time().replace(microsecond=0).isoformat(), "a": int(amount_ml)}
+        )
     return now
 
 
 def delete_entries(ids):
     if not ids:
         return False
-    conn = get_conn()
-    conn.executemany("DELETE FROM entries WHERE id = ?", [(i,) for i in ids])
-    conn.commit()
-    conn.close()
+    with ENGINE.begin() as conn:
+        for i in ids:
+            conn.execute(sa.text("DELETE FROM entries WHERE id = :i"), {"i": int(i)})
     return True
 
 
