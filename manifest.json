@@ -1,10 +1,10 @@
 {
   "name": "WaterYouDoing",
-  "short_name": "WYD",
+  "short_name": "WaterYouDoing",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#00aaff",
+  "background_color": "#f5faff",
+  "theme_color": "#f5faff",
   "icons": [
     {
       "src": "icon-512.png",
@@ -13,4 +13,3 @@
     }
   ]
 }
-
