@@ -1,0 +1,5 @@
+.streamlit/secrets.toml
+data.db
+data.csv
+__pycache__/
+*.pyc
